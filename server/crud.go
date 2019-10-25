@@ -44,8 +44,8 @@ func (sm *SafeMap) UpdateSafe(key, value string) error {
 }
 
 func (sm *SafeMap) DeleteSafe(key string) error {
-	sm.rwmutex.RLock()
-	defer sm.rwmutex.RUnlock()
+	sm.rwmutex.Lock()
+	defer sm.rwmutex.Unlock()
 	if _, keyExists := sm.kvstore[key]; keyExists {
 		delete(sm.kvstore, key)
 		return nil
