@@ -1,4 +1,4 @@
-package store
+package server
 
 import (
 	"errors"
@@ -11,7 +11,7 @@ type SafeMap struct {
 }
 
 
-func (sm *SafeMap) Create (key, value string) error{
+func (sm *SafeMap) CreateSafe(key, value string) error{
 	sm.rwmutex.Lock()
 	defer sm.rwmutex.Unlock()
 	_, alreadyExists := sm.kvstore[key]
@@ -22,7 +22,7 @@ func (sm *SafeMap) Create (key, value string) error{
 	return nil
 }
 
-func (sm *SafeMap) Retrieve(key string) (error, string) {
+func (sm *SafeMap) RetrieveSafe(key string) (error, string) {
 	sm.rwmutex.RLock()
 	defer sm.rwmutex.RUnlock()
 	if val, keyExists := sm.kvstore[key]; keyExists {
@@ -32,7 +32,7 @@ func (sm *SafeMap) Retrieve(key string) (error, string) {
 	}
 }
 
-func (sm *SafeMap) Update(key, value string) error {
+func (sm *SafeMap) UpdateSafe(key, value string) error {
 	sm.rwmutex.Lock()
 	defer sm.rwmutex.Unlock()
 	if _, keyExists := sm.kvstore[key]; keyExists {
@@ -43,7 +43,7 @@ func (sm *SafeMap) Update(key, value string) error {
 	}
 }
 
-func (sm *SafeMap) Delete(key string) error {
+func (sm *SafeMap) DeleteSafe(key string) error {
 	sm.rwmutex.RLock()
 	defer sm.rwmutex.RUnlock()
 	if _, keyExists := sm.kvstore[key]; keyExists {

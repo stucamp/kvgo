@@ -2,10 +2,10 @@ syntax = "proto3";
 
 
 service KeyValueStore {
-    rpc Create (CreateRequest) returns (CreateResponse);
-    rpc Retrieve (RetrieveRequest) returns (RetrieveResponse);
-    rpc Update (UpdateRequest) returns (UpdateResponse);
-    rpc Delete (DeleteRequest) returns (DeleteResponse);
+    rpc Create (CreateRequest) returns (CreateResponse) {}
+    rpc Retrieve (RetrieveRequest) returns (RetrieveResponse) {}
+    rpc Update (UpdateRequest) returns (UpdateResponse) {}
+    rpc Delete (DeleteRequest) returns (DeleteResponse) {}
 }
 
 message Value {
