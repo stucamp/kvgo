@@ -11,7 +11,7 @@ import (
 //go:generate protoc -I ../api/ --go_out=plugins=grpc:../api ../api/kv.proto
 
 
-func main(){
+func Run(){
 	kvstore := make(map[string]string)
 	mutex := sync.RWMutex{}
 	safeKvStore := SafeMap{mutex, kvstore}
