@@ -25,11 +25,11 @@ func newGrpcServer(kvStore *SafeMap) {
 		log.Fatalf("failed to listen: %v", err)
 	}
 	s := grpc.NewServer()
-	serv := Server{
+
+	pb.RegisterKeyValueStoreServer(s, &Server{
 		UnimplementedKeyValueStoreServer: pb.UnimplementedKeyValueStoreServer{},
 		sm:                               SafeMap{},
-	}
-	pb.RegisterKeyValueStoreServer(s, &serv)
+	})
 
 	if err := s.Serve(lis); err != nil {
 		log.Fatalf("failed to serve: %v", err)
