@@ -7,11 +7,11 @@ This was written mostly for fun and because I enjoy golang and grpc.
 
 ### Todo
 
-- Command line options to modify server configuration (host, port, etc.)
-- Expand types supported, right now the backing structure is ```map[string]string```
-- Expand capabilities with some pubsub options
-    * Subscribe to keys value change
-    * Subscribe to keys deleted
+- Command line options to modify server configuration.
+- Expand types supported, right now the key value store only works with strings for both keys and values.
+- Expand capabilities with some pubsub options:
+    * Subscribe to keys value change.
+    * Subscribe to keys deleted.
 
 
 
