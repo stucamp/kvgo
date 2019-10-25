@@ -1,0 +1,60 @@
+syntax = "proto3";
+
+
+service KeyValueStore {
+    rpc Create (CreateRequest) returns (CreateResponse);
+    rpc Retrieve (RetrieveRequest) returns (RetrieveResponse);
+    rpc Update (UpdateRequest) returns (UpdateResponse);
+    rpc Delete (DeleteRequest) returns (DeleteResponse);
+}
+
+message Value {
+    string value = 2;
+}
+
+message Key {
+    string key = 1;
+}
+
+message KeyValue {
+    Key key = 1;
+    Value value = 2;
+}
+
+message CreateRequest {
+    KeyValue keyValue = 1;
+}
+
+message CreateResponse {
+    Success success = 1;
+}
+
+message RetrieveRequest {
+    Key key = 1;
+}
+
+message RetrieveResponse {
+    Success success = 1;
+    Value value = 2;
+}
+
+message UpdateRequest {
+    KeyValue keyValue = 1;
+}
+
+message UpdateResponse {
+    Success success = 1;
+}
+
+message DeleteRequest {
+    Key key = 1;
+}
+
+message DeleteResponse {
+    Success success = 1;
+}
+
+message Success {
+    bool wasSuccessful = 1;
+    string description  = 2;
+}
