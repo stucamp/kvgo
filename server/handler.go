@@ -9,23 +9,23 @@ import (
 
 type KvServer struct {
 	pb.UnimplementedKeyValueStoreServer
-	rwmutex sync.RWMutex
-	sm map[string]string
+	mut   sync.RWMutex
+	store map[string]string
 }
 
 func (s *KvServer) Create(ctx context.Context, in *pb.CreateRequest) (*pb.CreateResponse, error) {
 	keyValue := in.GetKeyValue()
-	s.rwmutex.Lock()
-	defer s.rwmutex.Unlock()
+	s.mut.Lock()
+	defer s.mut.Unlock()
 
-	if _, alreadyExists := s.sm[keyValue.Key.Key]; alreadyExists {
+	if _, alreadyExists := s.store[keyValue.Key.Key]; alreadyExists {
 		return &pb.CreateResponse{
 			Success: &pb.Success{
 								WasSuccessful:        false,
 								Description:          fmt.Sprintf("Key {%v} already exists", keyValue.Key.Key),
 			}}, nil
 	}
-	s.sm[keyValue.Key.Key] = keyValue.Value.Value
+	s.store[keyValue.Key.Key] = keyValue.Value.Value
 	return &pb.CreateResponse{
 		Success: &pb.Success {
 							WasSuccessful: true,
@@ -35,10 +35,10 @@ func (s *KvServer) Create(ctx context.Context, in *pb.CreateRequest) (*pb.Create
 
 func (s *KvServer) Retrieve(ctx context.Context, in *pb.RetrieveRequest) (*pb.RetrieveResponse, error){
 	key := in.GetKey()
-	s.rwmutex.RLock()
-	defer s.rwmutex.RUnlock()
+	s.mut.RLock()
+	defer s.mut.RUnlock()
 
-	if value, keyExists := s.sm[key.Key]; keyExists {
+	if value, keyExists := s.store[key.Key]; keyExists {
 		return &pb.RetrieveResponse{
 						Success: &pb.Success{WasSuccessful: true, Description: ""},
 						Value: &pb.Value{Value: value,},
@@ -55,11 +55,11 @@ func (s *KvServer) Retrieve(ctx context.Context, in *pb.RetrieveRequest) (*pb.Re
 
 func (s *KvServer) Update(ctx context.Context, in *pb.UpdateRequest) (*pb.UpdateResponse, error) {
 	keyValue := in.GetKeyValue()
-	s.rwmutex.Lock()
-	defer s.rwmutex.Unlock()
+	s.mut.Lock()
+	defer s.mut.Unlock()
 
-	if _, keyExists := s.sm[keyValue.Key.Key]; keyExists {
-		s.sm[keyValue.Key.Key] = keyValue.Value.Value
+	if _, keyExists := s.store[keyValue.Key.Key]; keyExists {
+		s.store[keyValue.Key.Key] = keyValue.Value.Value
 		return &pb.UpdateResponse{
 			Success:&pb.Success{
 				WasSuccessful: true,
@@ -73,11 +73,11 @@ func (s *KvServer) Update(ctx context.Context, in *pb.UpdateRequest) (*pb.Update
 
 func (s *KvServer) Delete(ctx context.Context, in *pb.DeleteRequest) (*pb.DeleteResponse, error) {
 	key := in.GetKey()
-	s.rwmutex.Lock()
-	defer s.rwmutex.Unlock()
+	s.mut.Lock()
+	defer s.mut.Unlock()
 
-	if _, keyExists := s.sm[key.Key]; keyExists {
-		delete(s.sm, key.Key)
+	if _, keyExists := s.store[key.Key]; keyExists {
+		delete(s.store, key.Key)
 		return &pb.DeleteResponse{
 			Success:&pb.Success{
 				WasSuccessful: true,

@@ -23,7 +23,7 @@ func Run(config Config){
 	}
 
 	grpcServer := grpc.NewServer()
-	pb.RegisterKeyValueStoreServer(grpcServer, &KvServer{sm: make(map[string]string)})
+	pb.RegisterKeyValueStoreServer(grpcServer, &KvServer{store: make(map[string]string)})
 	if err := grpcServer.Serve(lis); err != nil {
 		log.Fatalf("failed to serve: %v", err)
 	}
