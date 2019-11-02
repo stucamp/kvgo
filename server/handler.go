@@ -2,57 +2,91 @@ package server
 
 import (
 	"context"
+	"fmt"
 	pb "github.com/somerska/kvgo/api"
+	"sync"
 )
 
-type Server struct {
+type KvServer struct {
 	pb.UnimplementedKeyValueStoreServer
-	sm SafeMap
+	rwmutex sync.RWMutex
+	sm map[string]string
 }
 
-func (s *Server) Create(ctx context.Context, in *pb.CreateRequest) (*pb.CreateResponse, error){
+func (s *KvServer) Create(ctx context.Context, in *pb.CreateRequest) (*pb.CreateResponse, error) {
 	keyValue := in.GetKeyValue()
-	err := s.sm.CreateSafe(keyValue.Key.Key, keyValue.Value.Value)
-	if err != nil {
-		return &pb.CreateResponse{Success: &pb.Success{WasSuccessful: false, Description:err.Error()}}, nil
-	} else {
-		return &pb.CreateResponse{Success:&pb.Success{WasSuccessful: true, Description:""}}, nil
+	s.rwmutex.Lock()
+	defer s.rwmutex.Unlock()
+
+	if _, alreadyExists := s.sm[keyValue.Key.Key]; alreadyExists {
+		return &pb.CreateResponse{
+			Success: &pb.Success{
+								WasSuccessful:        false,
+								Description:          fmt.Sprintf("Key {%v} already exists", keyValue.Key.Key),
+			}}, nil
 	}
+	s.sm[keyValue.Key.Key] = keyValue.Value.Value
+	return &pb.CreateResponse{
+		Success: &pb.Success {
+							WasSuccessful: true,
+							Description:fmt.Sprintf("Key {%v} created", keyValue.Key.Key),
+		}}, nil
 }
 
-func (s *Server) Retrieve(ctx context.Context, in *pb.RetrieveRequest) (*pb.RetrieveResponse, error){
+func (s *KvServer) Retrieve(ctx context.Context, in *pb.RetrieveRequest) (*pb.RetrieveResponse, error){
 	key := in.GetKey()
-	err, value := s.sm.RetrieveSafe(key.Key)
-	if err != nil {
+	s.rwmutex.RLock()
+	defer s.rwmutex.RUnlock()
+
+	if value, keyExists := s.sm[key.Key]; keyExists {
 		return &pb.RetrieveResponse{
-			Success: &pb.Success{WasSuccessful: false, Description: err.Error()},
-			Value: &pb.Value{Value: ""},
+						Success: &pb.Success{WasSuccessful: true, Description: ""},
+						Value: &pb.Value{Value: value,},
 		}, nil
 	} else {
 		return &pb.RetrieveResponse{
-			Success: &pb.Success{WasSuccessful: true, Description: ""},
-			Value: &pb.Value{Value: value},
+			Success: &pb.Success{
+								WasSuccessful: false,
+								Description: fmt.Sprintf("Key {%v} does not exist", key.Key)},
+			Value: &pb.Value{Value: "",},
 		}, nil
 	}
 }
 
-func (s *Server) Update(ctx context.Context, in *pb.UpdateRequest) (*pb.UpdateResponse, error) {
+func (s *KvServer) Update(ctx context.Context, in *pb.UpdateRequest) (*pb.UpdateResponse, error) {
 	keyValue := in.GetKeyValue()
-	err := s.sm.UpdateSafe(keyValue.Key.Key, keyValue.Value.Value)
-	if err != nil {
-		return &pb.UpdateResponse{Success: &pb.Success{WasSuccessful: false, Description:err.Error()}}, nil
-	} else {
-		return &pb.UpdateResponse{Success:&pb.Success{WasSuccessful: true, Description:""}}, nil
+	s.rwmutex.Lock()
+	defer s.rwmutex.Unlock()
+
+	if _, keyExists := s.sm[keyValue.Key.Key]; keyExists {
+		s.sm[keyValue.Key.Key] = keyValue.Value.Value
+		return &pb.UpdateResponse{
+			Success:&pb.Success{
+				WasSuccessful: true,
+				Description:fmt.Sprintf("Key {%v} updated", keyValue.Key.Key)}}, nil
+	}  else {
+		return &pb.UpdateResponse{Success: &pb.Success{
+			WasSuccessful: false,
+			Description:fmt.Sprintf("Key {%v} does not exist", keyValue.Key.Key)}}, nil
 	}
 }
 
-func (s *Server) Delete(ctx context.Context, in *pb.DeleteRequest) (*pb.DeleteResponse, error) {
+func (s *KvServer) Delete(ctx context.Context, in *pb.DeleteRequest) (*pb.DeleteResponse, error) {
 	key := in.GetKey()
-	err := s.sm.DeleteSafe(key.Key)
-	if err != nil {
-		return &pb.DeleteResponse{Success: &pb.Success{WasSuccessful: false, Description:err.Error()}}, nil
-	} else {
-		return &pb.DeleteResponse{Success:&pb.Success{WasSuccessful: true, Description:""}}, nil
+	s.rwmutex.Lock()
+	defer s.rwmutex.Unlock()
+
+	if _, keyExists := s.sm[key.Key]; keyExists {
+		delete(s.sm, key.Key)
+		return &pb.DeleteResponse{
+			Success:&pb.Success{
+				WasSuccessful: true,
+				Description:fmt.Sprintf("Key {%v} deleted", key.Key)}}, nil
+	}  else {
+		return &pb.DeleteResponse{
+			Success: &pb.Success{
+				WasSuccessful: false,
+				Description:fmt.Sprintf("Key {%v} does not exist", key.Key)}}, nil
 	}
 }
 
