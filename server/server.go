@@ -11,11 +11,10 @@ import (
 
 type Config struct {
 	Ipaddr string
-	Port string
+	Port   string
 }
 
-
-func Run(config Config){
+func Run(config Config) {
 	fqHost := config.Ipaddr + ":" + config.Port
 	lis, err := net.Listen("tcp", fqHost)
 	if err != nil {
@@ -28,6 +27,3 @@ func Run(config Config){
 		log.Fatalf("failed to serve: %v", err)
 	}
 }
-
-
-
