@@ -5,34 +5,29 @@ import (
 	"google.golang.org/grpc"
 	"log"
 	"net"
-	"sync"
 )
 
 //go:generate protoc -I ../api/ --go_out=plugins=grpc:../api ../api/kv.proto
 
-
-func Run(){
-	kvstore := make(map[string]string)
-	mutex := sync.RWMutex{}
-	safeKvStore := SafeMap{mutex, kvstore}
-	newGrpcServer(&safeKvStore)
-
+type Config struct {
+	Ipaddr string
+	Port string
 }
 
-func newGrpcServer(kvStore *SafeMap) {
-	lis, err := net.Listen("tcp", ":50051")
+
+func Run(config Config){
+	fqHost := config.Ipaddr + ":" + config.Port
+	lis, err := net.Listen("tcp", fqHost)
 	if err != nil {
 		log.Fatalf("failed to listen: %v", err)
 	}
-	s := grpc.NewServer()
 
-	pb.RegisterKeyValueStoreServer(s, &Server{
-		UnimplementedKeyValueStoreServer: pb.UnimplementedKeyValueStoreServer{},
-		sm:                               SafeMap{},
-	})
-
-	if err := s.Serve(lis); err != nil {
+	grpcServer := grpc.NewServer()
+	pb.RegisterKeyValueStoreServer(grpcServer, &KvServer{store: make(map[string]string)})
+	if err := grpcServer.Serve(lis); err != nil {
 		log.Fatalf("failed to serve: %v", err)
 	}
 }
+
+
 

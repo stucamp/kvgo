@@ -9,7 +9,7 @@ service KeyValueStore {
 }
 
 message Value {
-    string value = 2;
+    string value = 1;
 }
 
 message Key {
@@ -58,3 +58,4 @@ message Success {
     bool wasSuccessful = 1;
     string description  = 2;
 }
+
