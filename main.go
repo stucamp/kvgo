@@ -5,7 +5,7 @@ import (
 	sv "github.com/somerska/kvgo/server"
 )
 
-func main(){
+func main() {
 	ipaddrPtr := flag.String("ipv4", "localhost", "IP Address where the server will be hosted")
 	portPtr := flag.String("port", "50051", "Port where the server will be hosted")
 	flag.Parse()
@@ -15,5 +15,3 @@ func main(){
 	}
 	sv.Run(config)
 }
-
-
