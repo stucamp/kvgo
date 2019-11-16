@@ -28,14 +28,14 @@ $ ./kvgo
 For now I've used python for some unary endpoint testing.  This should work fine with newer versions of python but for now I've
 tested with python 3.6
 
-####Setup
+#### Setup
 ```shell script
 $ sudo apt-get -y update && sudo apt-get -y install python3.6 python3-pip
 # activate your virtual environment if using one
 $ pip3 install grpcio grpcio-tools
 ```
 
-####Running
+#### Running
 ```shell script
 # launch kvgo server in one terminal and in another navigate to kvgo/performance
 $ python3.6 py_performance.py
